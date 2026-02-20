@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Vitascience — Dashboard de Insights & Ideias 2026</title>
+<meta name="description" content="Análise da pesquisa com clientes Vitascience · Fev 2026" />
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: #0B0F1A; color: #E8ECF4; font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; }
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: #0B0F1A; }
+  ::-webkit-scrollbar-thumb { background: #1E2A3A; border-radius: 3px; }
+</style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/recharts/2.12.7/Recharts.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.9/babel.min.js"></script>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+const { useState } = React;
+const { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar, Legend } = Recharts;
+
+const C = {
+  bg: "#0B0F1A", card: "#131825", border: "#1E2A3A",
+  accent: "#22D3A7", accentSoft: "rgba(34,211,167,0.12)", accentGlow: "rgba(34,211,167,0.25)",
+  warn: "#F59E0B", warnSoft: "rgba(245,158,11,0.12)",
+  danger: "#EF4444", dangerSoft: "rgba(239,68,68,0.12)",
+  blue: "#3B82F6", blueSoft: "rgba(59,130,246,0.12)",
+  purple: "#A78BFA", purpleSoft: "rgba(167,139,250,0.12)",
+  pink: "#EC4899", pinkSoft: "rgba(236,72,153,0.12)",
+  text: "#E8ECF4", muted: "#8392A7", dim: "#4A5568",
+};
+const CC = ["#22D3A7","#3B82F6","#F59E0B","#EC4899","#A78BFA","#EF4444","#06B6D4"];
+
+const painData = [
+  {name:"Sobrepeso",value:30,pct:55},{name:"Dores Articulares",value:18,pct:33},
+  {name:"Diabetes/Crônicas",value:10,pct:18},{name:"Pele/Envelhecimento",value:8,pct:15},
+  {name:"Disposição/Energia",value:6,pct:11},
+];
+const trustData = [
+  {name:"Dr. Dayan",value:35},{name:"Resultado Pessoal",value:25},
+  {name:"Depoimentos",value:20},{name:"Pesquisa Própria",value:12},{name:"Indicação Médica",value:8},
+];
+const barrierData = [
+  {barrier:"Funciona?",score:85},{barrier:"Preço Alto",score:65},
+  {barrier:"Efeitos Colat.",score:40},{barrier:"Interação Med.",score:25},{barrier:"Golpes/Falsos",score:15},
+];
+const productData = [
+  {product:"SB4",mentions:22,sentiment:78},{product:"Artivita",mentions:16,sentiment:92},
+  {product:"Bela Vita",mentions:8,sentiment:85},{product:"Glicovitan",mentions:4,sentiment:80},
+  {product:"Vita Calme",mentions:3,sentiment:88},{product:"Multivita",mentions:3,sentiment:82},
+];
+const radarData = [
+  {subject:"Prova Social",A:45,B:90},{subject:"Preço Justo",A:35,B:85},
+  {subject:"Suporte",A:40,B:95},{subject:"Comunicação",A:50,B:80},
+  {subject:"Personalização",A:25,B:90},{subject:"Dr. Dayan",A:70,B:95},
+];
+const ideas = [
+  {id:1,category:"RETENÇÃO",icon:"🔄",title:"Programa Vita Fiel",description:"Programa de fidelidade com pontos por compra recorrente. A cada 3 potes, desconto progressivo (10% → 15% → 20%). Clientes que compram há +6 meses ganham acesso a lives exclusivas.",impact:"Alto",effort:"Médio",tags:["Preço","Fidelidade"],metric:"↑ 35% recompra",color:C.accent,colorSoft:C.accentSoft},
+  {id:2,category:"CONVERSÃO",icon:"📹",title:"Banco de Depoimentos Reais",description:"Criar sistema estruturado para coletar vídeos curtos de clientes (15-30s) com antes/depois e relatos reais. Publicar em landing pages, WhatsApp e Instagram. A pesquisa mostra que 70% confia por resultado visível.",impact:"Alto",effort:"Baixo",tags:["Prova Social","Conteúdo"],metric:"↑ 50% conversão",color:C.blue,colorSoft:C.blueSoft},
+  {id:3,category:"COMUNICAÇÃO",icon:"📱",title:"WhatsApp Segmentado",description:"Segmentar lista por: novos compradores, recorrentes, inativos. Cadência diferente para cada grupo. Clientes recorrentes recebem dicas de uso, não mais ofertas repetitivas.",impact:"Alto",effort:"Médio",tags:["WhatsApp","Automação"],metric:"↓ 60% opt-out",color:C.warn,colorSoft:C.warnSoft},
+  {id:4,category:"CONFIANÇA",icon:"🩺",title:"Lives Semanais com Dr. Dayan",description:"Lives de 20min no Instagram/YouTube onde Dr. Dayan responde dúvidas dos clientes. Formato: 'Pergunte ao Dr.' — tema da semana baseado nas dúvidas mais comuns. A confiança nele é o ativo nº1.",impact:"Alto",effort:"Baixo",tags:["Dr. Dayan","Autoridade"],metric:"↑ 40% confiança",color:C.purple,colorSoft:C.purpleSoft},
+  {id:5,category:"RECEITA",icon:"💳",title:"Parcelamento Sem Juros",description:"Oferecer 3x a 6x sem juros no cartão. A barreira financeira é citada por 40%+ dos clientes. Negociar com gateway taxas melhores. Testar assinatura mensal com desconto.",impact:"Alto",effort:"Alto",tags:["Preço","Pagamento"],metric:"↑ 25% ticket",color:C.pink,colorSoft:C.pinkSoft},
+  {id:6,category:"EXPERIÊNCIA",icon:"📋",title:"Guia Personalizado na Caixa",description:"Card impresso na embalagem com: para que serve, como tomar, com que combinar, e QR code para vídeo do Dr. Dayan. Clientes pedem orientação clara e tangível.",impact:"Médio",effort:"Baixo",tags:["Pós-Venda","UX"],metric:"↑ 30% satisfação",color:C.accent,colorSoft:C.accentSoft},
+  {id:7,category:"SUPORTE",icon:"🧑‍⚕️",title:"Consultoria Nutricional",description:"1 sessão de 15min com nutricionista para clientes que compram +R$300. Orientação sobre combinação de suplementos, horários e alimentação. Resolve: 'será que estou tomando certo?'",impact:"Alto",effort:"Alto",tags:["Suporte","Diferencial"],metric:"↑ 45% NPS",color:C.blue,colorSoft:C.blueSoft},
+  {id:8,category:"SEGURANÇA",icon:"🛡️",title:"Selo Anti-Golpe + Verificação",description:"Cliente relatou golpe em site falso com nome do Dr. Dayan. Criar página oficial de verificação, selo de autenticidade e campanha: 'Compre apenas nos canais oficiais'.",impact:"Médio",effort:"Baixo",tags:["Marca","Segurança"],metric:"↓ 80% fraudes",color:C.danger,colorSoft:C.dangerSoft},
+];
+const quotes = [
+  {quote:"As campanhas de WhatsApp são muito repetitivas e cansativas, principalmente para quem já comprou",author:"Cristiana",tag:"⚠️ Comunicação",color:C.warn},
+  {quote:"Entrei em um site com vídeos do Dr. Dayan e era golpe — perdi todo meu dinheiro",author:"Nilma",tag:"🚨 Segurança",color:C.danger},
+  {quote:"Dividisse sem juros que aí sim daria oportunidades para todos",author:"Dalva",tag:"💰 Preço",color:C.pink},
+  {quote:"Gostaria que tivesse uma consulta mais específica para ver se está comprando certo",author:"Janete",tag:"🩺 Suporte",color:C.blue},
+  {quote:"Tenho 60 anos e não tomo remédio nenhum. Somente suplementos.",author:"Gilca",tag:"💚 Fidelidade",color:C.accent},
+  {quote:"Gostaria que viesse escrito junto com o produto como usar — gosto de ter comigo o papel",author:"Daniela",tag:"📋 Experiência",color:C.purple},
+];
+const matrix = [
+  {label:"🎯 FAZER AGORA",sub:"Alto Impacto · Baixo Esforço",bg:"rgba(34,211,167,0.08)",border:C.accent,items:["Banco de Depoimentos Reais","Lives com Dr. Dayan","Guia na Caixa","Selo Anti-Golpe"]},
+  {label:"📋 PLANEJAR",sub:"Alto Impacto · Alto Esforço",bg:"rgba(59,130,246,0.08)",border:C.blue,items:["Programa Vita Fiel","Consultoria Nutricional","Parcelamento s/ Juros"]},
+  {label:"⏰ AGENDAR",sub:"Médio Impacto · Baixo Esforço",bg:"rgba(245,158,11,0.06)",border:C.warn,items:["Otimizar cadência WhatsApp"]},
+  {label:"💡 AVALIAR",sub:"Médio Impacto · Alto Esforço",bg:"rgba(167,139,250,0.06)",border:C.purple,items:["—"]},
+];
+
+const Tip = ({active,payload,label}) => {
+  if(!active||!payload?.length) return null;
+  const d=payload[0];
+  return React.createElement("div",{style:{background:C.card,border:"1px solid "+C.border,borderRadius:8,padding:"8px 12px",fontSize:13,color:C.text}},
+    React.createElement("div",{style:{fontWeight:600}},label||d.name),
+    React.createElement("div",{style:{color:C.accent,marginTop:2}},d.value+(d.payload?.pct!=null?" ("+d.payload.pct+"%)":""))
+  );
+};
+
+const renderPieLabel=({name,percent,x,y,textAnchor})=>
+  React.createElement("text",{x,y,textAnchor,fill:C.muted,fontSize:11,dominantBaseline:"central"},name+" ("+(percent*100).toFixed(0)+"%)");
+
+const Stat=({label,value,sub,color=C.accent})=>(
+  <div style={{background:C.card,border:"1px solid "+C.border,borderRadius:14,padding:"18px 20px",position:"relative",overflow:"hidden"}}>
+    <div style={{position:"absolute",top:0,left:0,right:0,height:3,background:"linear-gradient(90deg,"+color+",transparent)"}}/>
+    <div style={{fontSize:11,color:C.muted,textTransform:"uppercase",letterSpacing:"0.08em",fontWeight:600}}>{label}</div>
+    <div style={{fontSize:30,fontWeight:700,color:C.text,lineHeight:1,margin:"8px 0 4px"}}>{value}</div>
+    <div style={{fontSize:12,color:C.muted}}>{sub}</div>
+  </div>
+);
+
+const Idea=({idea,open,toggle})=>(
+  <div onClick={toggle} style={{background:C.card,border:"1px solid "+(open?idea.color+"55":C.border),borderRadius:14,padding:"18px 20px",cursor:"pointer",transition:"all 0.25s",position:"relative",overflow:"hidden",boxShadow:open?"0 0 24px "+idea.color+"15":"none"}}>
+    <div style={{position:"absolute",top:0,left:0,width:4,height:"100%",background:idea.color,borderRadius:"4px 0 0 4px",opacity:open?1:0.4,transition:"opacity 0.25s"}}/>
+    <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",gap:10}}>
+      <div style={{flex:1,minWidth:0}}>
+        <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:6}}>
+          <span style={{fontSize:20}}>{idea.icon}</span>
+          <span style={{fontSize:10,fontWeight:700,letterSpacing:"0.1em",color:idea.color,background:idea.colorSoft,padding:"2px 7px",borderRadius:4}}>{idea.category}</span>
+        </div>
+        <div style={{fontSize:16,fontWeight:700,color:C.text}}>{idea.title}</div>
+        {open&&<div style={{marginTop:10,fontSize:13,lineHeight:1.65,color:C.muted}}>{idea.description}</div>}
+      </div>
+      <div style={{textAlign:"right",flexShrink:0}}>
+        <span style={{fontSize:10,fontWeight:600,color:idea.impact==="Alto"?C.accent:C.warn,background:idea.impact==="Alto"?C.accentSoft:C.warnSoft,padding:"2px 7px",borderRadius:4}}>Impacto {idea.impact}</span>
+        <div style={{marginTop:6,fontSize:18,fontWeight:800,color:idea.color}}>{idea.metric}</div>
+      </div>
+    </div>
+    {open&&<div style={{display:"flex",gap:6,marginTop:12,flexWrap:"wrap"}}>
+      {idea.tags.map(t=><span key={t} style={{fontSize:11,color:C.muted,border:"1px solid "+C.border,padding:"2px 8px",borderRadius:20}}>{t}</span>)}
+      <span style={{fontSize:11,color:C.dim,marginLeft:"auto"}}>Esforço: {idea.effort}</span>
+    </div>}
+  </div>
+);
+
+const ChartCard=({title,sub,children,style:s})=>(
+  <div style={{background:C.card,border:"1px solid "+C.border,borderRadius:14,padding:20,...s}}>
+    <div style={{fontSize:14,fontWeight:700,color:C.text,marginBottom:2}}>{title}</div>
+    <div style={{fontSize:11,color:C.muted,marginBottom:14}}>{sub}</div>
+    {children}
+  </div>
+);
+
+function Dashboard(){
+  const [expandedId,setExpandedId]=useState(null);
+  const [filter,setFilter]=useState("TODAS");
+  const categories=["TODAS",...new Set(ideas.map(i=>i.category))];
+  const filtered=filter==="TODAS"?ideas:ideas.filter(i=>i.category===filter);
+
+  return (
+    <div style={{minHeight:"100vh",background:C.bg,color:C.text}}>
+
+      <div style={{padding:"36px 24px 28px",borderBottom:"1px solid "+C.border,background:"linear-gradient(180deg,"+C.bg+",rgba(34,211,167,0.03))"}}>
+        <div style={{maxWidth:1100,margin:"0 auto"}}>
+          <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:6}}>
+            <div style={{width:8,height:8,borderRadius:"50%",background:C.accent,boxShadow:"0 0 10px "+C.accentGlow}}/>
+            <span style={{fontSize:10,fontWeight:700,letterSpacing:"0.14em",color:C.accent,textTransform:"uppercase",fontFamily:"monospace"}}>VITASCIENCE · PESQUISA 2026</span>
+          </div>
+          <h1 style={{margin:"0 0 6px",fontSize:32,fontWeight:800,letterSpacing:"-0.02em",color:C.text}}>Dashboard de Insights <span style={{color:C.accent}}>&amp;</span> Ideias</h1>
+          <p style={{margin:0,fontSize:14,color:C.muted}}>55 respondentes · 09 a 20 Fev 2026 · Pesquisa com clientes ativos</p>
+        </div>
+      </div>
+
+      <div style={{maxWidth:1100,margin:"0 auto",padding:"24px 24px 60px"}}>
+
+        <div style={{display:"grid",gridTemplateColumns:"repeat(5,1fr)",gap:12,marginBottom:28}}>
+          <Stat label="Respondentes" value="55" sub="100% orgânico" color={C.accent}/>
+          <Stat label="Mulheres" value="94%" sub="~52 de 55" color={C.pink}/>
+          <Stat label="Faixa etária" value="50-65" sub="público dominante" color={C.purple}/>
+          <Stat label="Experiência ruim" value="48%" sub="com outros produtos" color={C.warn}/>
+          <Stat label="Barreira: preço" value="42%" sub="querem parcelamento" color={C.danger}/>
+        </div>
+
+        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:16,marginBottom:16}}>
+          <ChartCard title="Principais Dores dos Clientes" sub="% que mencionam cada tema">
+            <ResponsiveContainer width="100%" height={200}>
+              <BarChart data={painData} layout="vertical" margin={{left:0,right:16}}>
+                <XAxis type="number" hide/>
+                <YAxis type="category" dataKey="name" width={130} tick={{fill:C.muted,fontSize:12}} axisLine={false} tickLine={false}/>
+                <Tooltip content={<Tip/>}/>
+                <Bar dataKey="pct" radius={[0,6,6,0]} barSize={16}>
+                  {painData.map((_,i)=><Cell key={i} fill={CC[i]}/>)}
+                </Bar>
+              </BarChart>
+            </ResponsiveContainer>
+          </ChartCard>
+
+          <ChartCard title="Pilares de Confiança" sub="O que faz confiar na Vitascience">
+            <ResponsiveContainer width="100%" height={200}>
+              <PieChart>
+                <Pie data={trustData} cx="50%" cy="50%" innerRadius={40} outerRadius={72} paddingAngle={3} dataKey="value" label={renderPieLabel} labelLine={{stroke:C.dim,strokeWidth:1}}>
+                  {trustData.map((_,i)=><Cell key={i} fill={CC[i]}/>)}
+                </Pie>
+                <Tooltip content={<Tip/>}/>
+              </PieChart>
+            </ResponsiveContainer>
+          </ChartCard>
+        </div>
+
+        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:16,marginBottom:28}}>
+          <ChartCard title="Barreiras à Compra" sub="Intensidade de cada barreira (0-100)">
+            <ResponsiveContainer width="100%" height={200}>
+              <BarChart data={barrierData} margin={{left:0,right:8}}>
+                <XAxis dataKey="barrier" tick={{fill:C.muted,fontSize:11}} axisLine={false} tickLine={false}/>
+                <YAxis hide/>
+                <Tooltip content={<Tip/>}/>
+                <Bar dataKey="score" radius={[6,6,0,0]} barSize={30}>
+                  {barrierData.map((_,i)=><Cell key={i} fill={i===0?C.danger:i===1?C.warn:C.blue}/>)}
+                </Bar>
+              </BarChart>
+            </ResponsiveContainer>
+          </ChartCard>
+
+          <ChartCard title="Gap de Oportunidade" sub="Atual vs. potencial desejado">
+            <ResponsiveContainer width="100%" height={200}>
+              <RadarChart data={radarData} cx="50%" cy="50%" outerRadius={70}>
+                <PolarGrid stroke={C.border}/>
+                <PolarAngleAxis dataKey="subject" tick={{fill:C.muted,fontSize:10}}/>
+                <PolarRadiusAxis hide/>
+                <Radar name="Atual" dataKey="A" stroke={C.warn} fill={C.warn} fillOpacity={0.15} strokeWidth={2}/>
+                <Radar name="Desejado" dataKey="B" stroke={C.accent} fill={C.accent} fillOpacity={0.1} strokeWidth={2}/>
+                <Legend iconType="circle" iconSize={7} wrapperStyle={{fontSize:10,color:C.muted,paddingTop:4}}/>
+              </RadarChart>
+            </ResponsiveContainer>
+          </ChartCard>
+        </div>
+
+        <ChartCard title="Produtos Mais Mencionados" sub="Frequência de citação e sentimento positivo" style={{marginBottom:28}}>
+          <div style={{display:"grid",gridTemplateColumns:"repeat(6,1fr)",gap:10}}>
+            {productData.map(p=>(
+              <div key={p.product} style={{background:C.bg,borderRadius:10,padding:14,border:"1px solid "+C.border}}>
+                <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:8}}>
+                  <span style={{fontWeight:700,fontSize:14}}>{p.product}</span>
+                  <span style={{fontSize:10,fontWeight:600,color:p.sentiment>=85?C.accent:C.warn,background:p.sentiment>=85?C.accentSoft:C.warnSoft,padding:"2px 6px",borderRadius:4}}>{p.sentiment}%</span>
+                </div>
+                <div style={{background:C.border,borderRadius:4,height:5,overflow:"hidden"}}>
+                  <div style={{width:(p.mentions/22*100)+"%",height:"100%",background:"linear-gradient(90deg,"+C.accent+","+C.blue+")",borderRadius:4}}/>
+                </div>
+                <div style={{marginTop:5,fontSize:10,color:C.muted}}>{p.mentions} menções</div>
+              </div>
+            ))}
+          </div>
+        </ChartCard>
+
+        <div style={{background:"linear-gradient(135deg,"+C.card+",rgba(34,211,167,0.04))",border:"1px solid "+C.border,borderRadius:14,padding:20,marginBottom:28}}>
+          <div style={{fontSize:14,fontWeight:700,marginBottom:14}}>💬 Falas-Chave dos Clientes</div>
+          <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:12}}>
+            {quotes.map((q,i)=>(
+              <div key={i} style={{background:C.bg,borderRadius:10,padding:"12px 14px",borderLeft:"3px solid "+q.color}}>
+                <span style={{fontSize:9,fontWeight:700,color:q.color,letterSpacing:"0.05em"}}>{q.tag}</span>
+                <p style={{margin:"6px 0 8px",fontSize:12,lineHeight:1.6,color:C.text,fontStyle:"italic"}}>"{q.quote}"</p>
+                <p style={{margin:0,fontSize:10,color:C.muted}}>— {q.author}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div style={{marginBottom:28}}>
+          <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",flexWrap:"wrap",gap:10,marginBottom:16}}>
+            <div>
+              <h2 style={{margin:"0 0 2px",fontSize:20,fontWeight:800}}>🚀 Plano de Ação — 8 Ideias</h2>
+              <p style={{margin:0,fontSize:12,color:C.muted}}>Clique para expandir detalhes</p>
+            </div>
+            <div style={{display:"flex",gap:5,flexWrap:"wrap"}}>
+              {categories.map(c=>(
+                <button key={c} onClick={()=>setFilter(c)} style={{background:filter===c?C.accent:"transparent",color:filter===c?C.bg:C.muted,border:"1px solid "+(filter===c?C.accent:C.border),borderRadius:20,padding:"4px 12px",fontSize:10,fontWeight:600,cursor:"pointer",transition:"all 0.2s"}}>{c}</button>
+              ))}
+            </div>
+          </div>
+          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12}}>
+            {filtered.map(idea=>(
+              <Idea key={idea.id} idea={idea} open={expandedId===idea.id} toggle={()=>setExpandedId(expandedId===idea.id?null:idea.id)}/>
+            ))}
+          </div>
+        </div>
+
+        <div style={{background:C.card,border:"1px solid "+C.border,borderRadius:14,padding:20}}>
+          <div style={{fontSize:14,fontWeight:700,marginBottom:14}}>📊 Matriz de Prioridade — Impacto × Esforço</div>
+          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:2,borderRadius:10,overflow:"hidden"}}>
+            {matrix.map((q,i)=>(
+              <div key={i} style={{background:q.bg,padding:"16px 18px",borderTop:i<2?"2px solid "+q.border:"none"}}>
+                <div style={{fontSize:12,fontWeight:700,color:q.border}}>{q.label}</div>
+                <div style={{fontSize:9,color:C.muted,marginBottom:8}}>{q.sub}</div>
+                {q.items.map((item,j)=><div key={j} style={{fontSize:12,color:C.text,marginTop:3}}>• {item}</div>)}
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div style={{textAlign:"center",marginTop:32,paddingTop:16,borderTop:"1px solid "+C.border}}>
+          <p style={{margin:0,fontSize:10,color:C.dim,fontFamily:"monospace",letterSpacing:"0.1em"}}>VITASCIENCE RESEARCH DASHBOARD · FEV 2026 · 55 RESPONDENTES</p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById("root")).render(<Dashboard/>);
+</script>
+</body>
+</html>
